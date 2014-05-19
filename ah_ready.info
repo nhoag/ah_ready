@@ -1,0 +1,5 @@
+name = Acquia Hosting Ready
+description = "Custom Insight Readiness Checks for Acquia Hosting"
+php = 5.0
+core = 7.x
+package = Acquia Network Connector
