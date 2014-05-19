@@ -1,4 +1,4 @@
-ah_ready
+Acquia Hosting Ready
 ========
 
-Acquia Hosting Ready: Insight checks for Acquia Hosting incompatibilities
+Insight checks for Acquia Hosting incompatibilities
