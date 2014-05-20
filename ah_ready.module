@@ -77,15 +77,6 @@ function ah_ready_acquia_spi_test() {
 //      'category'       => 'performance',
 //      'severity'       => 32,
 //    ),
-//    'context_show_regions_enabled_check' => array(
-//      'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-//      'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-//      'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-//      'solved'         => ah_ready_module_check('context_show_regions'),
-//      'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-//      'category'       => 'performance',
-//      'severity'       => 32,
-//    ),
 //    'db_maintenance_enabled_check' => array(
 //      'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
 //      'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
@@ -212,15 +203,6 @@ function ah_ready_acquia_spi_test() {
 //      'category'       => 'performance',
 //      'severity'       => 32,
 //    ),
-//    'multicron_enabled_check' => array(
-//      'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-//      'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-//      'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-//      'solved'         => ah_ready_module_check('multicron'),
-//      'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-//      'category'       => 'performance',
-//      'severity'       => 32,
-//    ),
 //    'oauth_enabled_check' => array(
 //      'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
 //      'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
@@ -320,15 +302,6 @@ function ah_ready_acquia_spi_test() {
 //      'category'       => 'performance',
 //      'severity'       => 32,
 //    ),
-//    'supercron_enabled_check' => array(
-//      'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-//      'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-//      'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-//      'solved'         => ah_ready_module_check('supercron'),
-//      'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-//      'category'       => 'performance',
-//      'severity'       => 32,
-//    ),
 //    'tcpdf_enabled_check' => array(
 //      'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
 //      'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
@@ -394,4 +367,3 @@ function ah_ready_acquia_spi_test() {
 //    ),
   );
 }
-
