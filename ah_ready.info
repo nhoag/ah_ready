@@ -3,3 +3,4 @@ description = "Custom Insight Readiness Checks for Acquia Hosting"
 php = 5.0
 core = 6.x
 package = Acquia Network Connector
+dependencies[] = acquia_spi
