@@ -113,16 +113,16 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'performance',
       'severity'       => 32,
     ),
-// @TODO: This should be a check for File Conveyor mode in the CDN module.
-//  'fileconveyor_enabled_check' => array(
-//    'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-//    'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-//    'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-//    'solved'         => ah_ready_module_check('fileconveyor'),
-//    'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-//    'category'       => 'performance',
-//    'severity'       => 32,
-//  ),
+    // @TODO: This should be a check for File Conveyor mode in the CDN module.
+    // 'fileconveyor_enabled_check' => array(
+    //   'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
+    //   'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
+    //   'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
+    //   'solved'         => ah_ready_module_check('fileconveyor'),
+    //   'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
+    //   'category'       => 'performance',
+    //   'severity'       => 32,
+    // ),
     'fivestar_enabled_check' => array(
       'description'    => 'When used with Anonymous user voting, this module can create significant amounts of data in the cache_form table.',
       'solved_message' => 'Fivestar is disabled',
@@ -259,16 +259,16 @@ function ah_ready_acquia_spi_test() {
     //   'category'       => 'performance',
     //   'severity'       => 32,
     // ),
-// @TODO: Find current info for Shibboleth support.
-//    'shib_auth_enabled_check' => array(
-//      'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-//      'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-//      'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-//      'solved'         => ah_ready_module_check('shib_auth'),
-//      'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-//      'category'       => 'performance',
-//      'severity'       => 32,
-//    ),
+    // @TODO: Find current info for Shibboleth support.
+    // 'shib_auth_enabled_check' => array(
+    //   'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
+    //   'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
+    //   'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
+    //   'solved'         => ah_ready_module_check('shib_auth'),
+    //   'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
+    //   'category'       => 'performance',
+    //   'severity'       => 32,
+    // ),
     'simplesamlphp_auth_enabled_check' => array(
       'description'    => 'Installing simpleSAMLphp Authentication on Acquia Cloud requires special care. For more information see: https://docs.acquia.com/articles/using-simplesamlphp-acquia-cloud-site',
       'solved_message' => 'simpleSAMLphp Authentication is disabled',
@@ -333,6 +333,7 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'performance',
       'severity'       => 32,
     ),
+    // @TODO: Add check for plupload_temporary_uri variable
     'plupload_enabled_check' => array(
       'description'    => 'Plupload can fail on high availability server architecture. For a solution see: https://docs.acquia.com/articles/correcting-broken-uploads-plupload-acquia-cloud-enterprise',
       'solved_message' => 'Plupload is disabled',
