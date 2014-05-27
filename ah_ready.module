@@ -24,15 +24,16 @@ function ah_ready_module_check($module_name) {
 }
 
 function ah_ready_version_check($module_name, $minimum) {
+
   $result = true;
 
   if (!ah_ready_module_check($module_name)) {
     $modules = module_rebuild_cache();
     $version = $modules[$module_name]->info['version'];
+    $result = version_compare($version, $minimum, '>=');
   }
 
-  return version_compare($version, $minimum, '>=');
-
+  return $result;
 }
 
 /**
@@ -189,7 +190,6 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'performance',
       'severity'       => 32,
     ),
-    // @TODO: This should be a check for Oauth version 6.x-3.0-beta5 or higher
     'oauth_enabled_check' => array(
       'description'    => 'OAuth version should be 6.x-3.0-beta5 or higher. Earlier versions had problems with Acquia Cloud and PHP FPM due to competing OAuth libraries. For more detail see: https://drupal.org/node/1439254',
       'solved_message' => 'OAuth version is 6.x-3.0-beta5 or higher',
