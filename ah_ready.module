@@ -23,12 +23,31 @@ function ah_ready_module_check($module_name) {
   return $result;
 }
 
-function ah_ready_concurrency_check($a, $b) {
+function ah_ready_concurrency_check($modules = array()) {
+
+  $num = count($modules);
+  $present = array();
+  foreach ($modules as $module) {
+    if (!ah_ready_module_check($module)) {
+      $present[$module] = 1;
+    }
+  }
+
+  if (count($present) < $num) {
+    $result = true;
+  } else {
+    $result = false;
+  }
+
+  return $result;
+}
+
+function ah_ready_dependency_check($modules = array(), $dependencies = array()) {
 
   $result = true;
 
-  if (!ah_ready_module_check($a) && !ah_ready_module_check($b)) {
-    $result = false;
+  if (!ah_ready_concurrency_check($modules)) {
+    $result = !ah_ready_concurrency_check($dependencies);
   }
 
   return $result;
@@ -264,7 +283,7 @@ function ah_ready_acquia_spi_test() {
       'description'    => 'Acquia Cloud does support both Search API and Apache Solr Search, but using both concurrently is not recommended as a best practice.',
       'solved_message' => 'Search API and ApacheSolr Search are not both enabled',
       'failed_message' => 'Both Search API and ApacheSolr Search are enabled',
-      'solved'         => ah_ready_concurrency_check('search_api', 'apachesolr'),
+      'solved'         => ah_ready_concurrency_check(array('search_api', 'apachesolr')),
       'fix_details'    => 'Disable one of Search API or Apache Solr Search modules.',
       'category'       => 'best_practices',
       'severity'       => 16,
@@ -314,15 +333,14 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'performance',
       'severity'       => 32,
     ),
-    // @TODO: This should check for workbench_moderation, apachesolr, and apachesolr_workbench_moderation
     'workbench_moderation_enabled_check' => array(
       'description'    => 'Workbench Moderation does not work out of the box with ApacheSolr search integration. For more information see: https://docs.acquia.com/articles/workbench-moderation-can-cause-problems-apachesolr',
-      'solved_message' => 'Workbench Moderation is disabled',
-      'failed_message' => 'Workbench Moderation is enabled',
-      'solved'         => ah_ready_module_check('workbench_moderation'),
+      'solved_message' => 'Workbench Moderation is disabled or dependencies are in place',
+      'failed_message' => 'Workbench Moderation is enabled with Apache Solr Search but Apache Solr Workbench Moderation was not found',
+      'solved'         => ah_ready_dependency_check(array('workbench_moderation', 'apachesolr'), array('apachesolr_workbench_moderation')),
       'fix_details'    => 'To use Workbench Moderation with ApacheSolr search integration, ensure the ApacheSolr Workbench Moderation module is installed.',
-      'category'       => 'performance',
-      'severity'       => 32,
+      'category'       => 'best_practices',
+      'severity'       => 16,
     ),
     'wurfl_enabled_check' => array(
       'description'    => 'WURFL should be configured with a symlink to private files.',
