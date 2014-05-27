@@ -259,16 +259,15 @@ function ah_ready_acquia_spi_test() {
     //   'category'       => 'performance',
     //   'severity'       => 32,
     // ),
-    // @TODO: Find current info for Shibboleth support.
-    // 'shib_auth_enabled_check' => array(
-    //   'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-    //   'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-    //   'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-    //   'solved'         => ah_ready_module_check('shib_auth'),
-    //   'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-    //   'category'       => 'performance',
-    //   'severity'       => 32,
-    // ),
+    'shib_auth_enabled_check' => array(
+      'description'    => 'The Shibboleth authentication module is not supported on Acquia Cloud. For federated logins, the simpleSAMLphp library is recommended. For more information see: https://docs.acquia.com/articles/using-simplesamlphp-acquia-cloud-site',
+      'solved_message' => 'Shibboleth authentication is disabled',
+      'failed_message' => 'Shibboleth authentication is enabled',
+      'solved'         => ah_ready_module_check('shib_auth'),
+      'fix_details'    => 'Disable the Shibboleth authentication module and switch to simpleSAMLphp.',
+      'category'       => 'performance',
+      'severity'       => 32,
+    ),
     'simplesamlphp_auth_enabled_check' => array(
       'description'    => 'Installing simpleSAMLphp Authentication on Acquia Cloud requires special care. For more information see: https://docs.acquia.com/articles/using-simplesamlphp-acquia-cloud-site',
       'solved_message' => 'simpleSAMLphp Authentication is disabled',
