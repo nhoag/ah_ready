@@ -23,6 +23,18 @@ function ah_ready_module_check($module_name) {
   return $result;
 }
 
+function ah_ready_version_check($module_name, $minimum) {
+  $result = true;
+
+  if (!ah_ready_module_check($module_name)) {
+    $modules = module_rebuild_cache();
+    $version = $modules[$module_name]->info['version'];
+  }
+
+  return version_compare($version, $minimum, '>=');
+
+}
+
 /**
  * Implements hook_acquia_spi_test().
  *
@@ -77,16 +89,15 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'performance',
       'severity'       => 32,
     ),
-    // @TODO: This should be a check for ds 6.x-2.x or higher
-    // 'ds_enabled_check' => array(
-    //   'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-    //   'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-    //   'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-    //   'solved'         => ah_ready_module_check('ds'),
-    //   'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-    //   'category'       => 'performance',
-    //   'severity'       => 32,
-    // ),
+    'ds_enabled_check' => array(
+      'description'    => 'Early versions of Display Suite store large amounts of data in the Variables table, which can consume significant memory. The 6.x-2.x branch or higher is recommended.',
+      'solved_message' => 'Display Suite is 6.x-2.x or higher',
+      'failed_message' => 'Display Suite is not 6.x-2.x or higher',
+      'solved'         => ah_ready_version_check('ds', '6.x-2.x'),
+      'fix_details'    => 'Upgrade the Display Suite module to 6.x-2.x or higher.',
+      'category'       => 'performance',
+      'severity'       => 32,
+    ),
     'elysia_cron_enabled_check' => array(
       'description'    => 'Elysia Cron is not incompatible, but requires careful setup. Poor implementations of this module can cause severe performance problems. For more details see: https://docs.acquia.com/articles/elysia-cron-acquia-cloud',
       'solved_message' => 'Elysia Cron is disabled',
@@ -179,15 +190,15 @@ function ah_ready_acquia_spi_test() {
       'severity'       => 32,
     ),
     // @TODO: This should be a check for Oauth version 6.x-3.0-beta5 or higher
-    // 'oauth_enabled_check' => array(
-    //   'description'    => 'OAuth version should be 6.x-3.0-beta5 or higher. Earlier versions had problems with Acquia Cloud and PHP FPM due to competing OAuth libraries. For more detail see: https://drupal.org/node/1439254',
-    //   'solved_message' => 'OAuth version is 6.x-3.0-beta5 or higher',
-    //   'failed_message' => 'OAuth version is not 6.x-3.0-beta5 or higher',
-    //   'solved'         => ah_ready_module_check('oauth'),
-    //   'fix_details'    => 'Upgrade the OAuth module to version 6.x-3.0-beta5 or higher.',
-    //   'category'       => 'performance',
-    //   'severity'       => 32,
-    // ),
+    'oauth_enabled_check' => array(
+      'description'    => 'OAuth version should be 6.x-3.0-beta5 or higher. Earlier versions had problems with Acquia Cloud and PHP FPM due to competing OAuth libraries. For more detail see: https://drupal.org/node/1439254',
+      'solved_message' => 'OAuth version is 6.x-3.0-beta5 or higher',
+      'failed_message' => 'OAuth version is not 6.x-3.0-beta5 or higher',
+      'solved'         => ah_ready_version_check('oauth', '6.x-3.0-beta5'),
+      'fix_details'    => 'Upgrade the OAuth module to version 6.x-3.0-beta5 or higher.',
+      'category'       => 'performance',
+      'severity'       => 32,
+    ),
     'pubdlcnt_enabled_check' => array(
       'description'    => 'Public Download Count prevents Varnish from caching pages. Google Analytics is a good replacement option.',
       'solved_message' => 'Public Download Count is disabled',
