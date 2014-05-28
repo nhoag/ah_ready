@@ -36,6 +36,26 @@ function ah_ready_version_check($module_name, $minimum) {
   return $result;
 }
 
+function ah_ready_variable_check($module, $variable, $value, $match = true) {
+
+  $result = true;
+
+  if (!ah_ready_module_check($module)) {
+    $var = variable_get($variable, NULL);
+    if ($match) {
+      if (!preg_match($value, $var)) {
+        $result = false;
+      }
+    } else {
+      if (preg_match($value, $var)) {
+        $result = false;
+      }
+    }
+  }
+
+  return $result;
+}
+
 /**
  * Implements hook_acquia_spi_test().
  *
@@ -43,6 +63,13 @@ function ah_ready_version_check($module_name, $minimum) {
  *
  */
 function ah_ready_acquia_spi_test() {
+
+  if (isset($_ENV['AH_SITE_GROUP'])) {
+    $plupload_var = "@^/mnt/(gfs|files)/{$_ENV['AH_SITE_GROUP']}((\.)?{$_ENV['AH_SITE_ENVIRONMENT']})?/tmp$@";
+  } else {
+    $plupload_var = "/.*?/";
+  }
+  $fileconveyor_var = "/advanced/";
 
   return array(
     'boost_enabled_check' => array(
@@ -69,7 +96,7 @@ function ah_ready_acquia_spi_test() {
       'failed_message' => 'Contact Importer is enabled',
       'solved'         => ah_ready_module_check('contact_importer'),
       'fix_details'    => 'Disable Contact Importer or ensure proper configuration.',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 32,
     ),
     'context_show_regions_enabled_check' => array(
@@ -117,16 +144,15 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'performance',
       'severity'       => 32,
     ),
-    // @TODO: This should be a check for File Conveyor mode in the CDN module.
-    // 'fileconveyor_enabled_check' => array(
-    //   'description'    => 'The Acquia SPI module automates the collection of site information. It is required for use with the Acquia Insight service.',
-    //   'solved_message' => 'Huzzah! The Acquia SPI module is enabled',
-    //   'failed_message' => 'Ruh-Roh! The Acquia SPI module is not enabled',
-    //   'solved'         => ah_ready_module_check('fileconveyor'),
-    //   'fix_details'    => 'Enable or download the Acquia agent module. This can be downloaded via Drush or from Drupal.org.',
-    //   'category'       => 'performance',
-    //   'severity'       => 32,
-    // ),
+    'fileconveyor_enabled_check' => array(
+      'description'    => 'GlusterFS does not support inotify, which is a requirement when using the CDN module in File Conveyor mode. Origin Pull mode should be used on Acquia Cloud.',
+      'solved_message' => 'The CDN module is not configured to use File Conveyor mode',
+      'failed_message' => 'The CDN module is configured to use File Conveyor mode',
+      'solved'         => ah_ready_variable_check('cdn', 'cdn_mode', $fileconveyor_var, false),
+      'fix_details'    => 'Switch CDN configuration from File Conveyor mode to Origin Pull mode.',
+      'category'       => 'best_practices',
+      'severity'       => 32,
+    ),
     'fivestar_enabled_check' => array(
       'description'    => 'When used with Anonymous user voting, this module can create significant amounts of data in the cache_form table.',
       'solved_message' => 'Fivestar is disabled',
@@ -151,7 +177,7 @@ function ah_ready_acquia_spi_test() {
       'failed_message' => 'HTML Purifier is enabled',
       'solved'         => ah_ready_module_check('htmlpurifier'),
       'fix_details'    => 'Configure HTML Purifier to utilize private files via symlink.',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 32,
     ),
     'imagefield_crop_enabled_check' => array(
@@ -196,7 +222,7 @@ function ah_ready_acquia_spi_test() {
       'failed_message' => 'OAuth version is not 6.x-3.0-beta5 or higher',
       'solved'         => ah_ready_version_check('oauth', '6.x-3.0-beta5'),
       'fix_details'    => 'Upgrade the OAuth module to version 6.x-3.0-beta5 or higher.',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 32,
     ),
     'pubdlcnt_enabled_check' => array(
@@ -214,7 +240,7 @@ function ah_ready_acquia_spi_test() {
       'failed_message' => 'Purge is enabled',
       'solved'         => ah_ready_module_check('purge'),
       'fix_details'    => 'Disable the Purge module in favor of Acquia Purge.',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 32,
     ),
     'quicktabs_enabled_check' => array(
@@ -259,7 +285,7 @@ function ah_ready_acquia_spi_test() {
       'failed_message' => 'Shibboleth authentication is enabled',
       'solved'         => ah_ready_module_check('shib_auth'),
       'fix_details'    => 'Disable the Shibboleth authentication module and switch to simpleSAMLphp.',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 32,
     ),
     'simplesamlphp_auth_enabled_check' => array(
@@ -268,7 +294,7 @@ function ah_ready_acquia_spi_test() {
       'failed_message' => 'simpleSAMLphp Authentication is enabled',
       'solved'         => ah_ready_module_check('simplesamlphp_auth'),
       'fix_details'    => 'Follow Acquia\'s documentation to properly install and configure simpleSAMLphp Authentication. For more information see: https://docs.acquia.com/articles/using-simplesamlphp-acquia-cloud-site',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 32,
     ),
     'supercron_enabled_check' => array(
@@ -304,17 +330,16 @@ function ah_ready_acquia_spi_test() {
       'failed_message' => 'WURFL is enabled',
       'solved'         => ah_ready_module_check('wurfl'),
       'fix_details'    => 'Disable the WURFL module or ensure proper configuration on Acquia Cloud.',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 32,
     ),
-    // @TODO: Add check for plupload_temporary_uri variable
     'plupload_enabled_check' => array(
       'description'    => 'Plupload can fail on high availability server architecture. For a solution see: https://docs.acquia.com/articles/correcting-broken-uploads-plupload-acquia-cloud-enterprise',
-      'solved_message' => 'Plupload is disabled',
-      'failed_message' => 'Plupload is enabled',
-      'solved'         => ah_ready_module_check('plupload'),
+      'solved_message' => 'Plupload is disabled or configured correctly',
+      'failed_message' => 'Plupload is enabled without the recommended configuration',
+      'solved'         => ah_ready_variable_check('plupload', 'plupload_temporary_uri', $plupload_var),
       'fix_details'    => 'Ensure Plupload is configured for Acquia Cloud Enterprise. For a solution see: https://docs.acquia.com/articles/correcting-broken-uploads-plupload-acquia-cloud-enterprise',
-      'category'       => 'performance',
+      'category'       => 'best_practices',
       'severity'       => 16,
     ),
   );
