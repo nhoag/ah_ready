@@ -107,6 +107,15 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'performance',
       'severity'       => 32,
     ),
+    'backup_migrate_enabled_check' => array(
+      'description'    => 'Backup Migrate causes many performance issues on Acquia Cloud. For more details see our documentation: https://docs.acquia.com/articles/backup-and-migrate-module-acquia-hosted-sites',
+      'solved_message' => 'Backup Migrate module is disabled',
+      'failed_message' => 'Backup Migrate module is enabled',
+      'solved'         => ah_ready_module_check('backup_migrate'),
+      'fix_details'    => 'Disable the Backup Migrate module and convert to a backup strategy in the following documentation: https://docs.acquia.com/articles/backup-and-migrate-module-acquia-hosted-sites.',
+      'category'       => 'performance',
+      'severity'       => 32,
+    ),
     'boost_enabled_check' => array(
       'description'    => 'Boost creates many disk writes, which can cause problems on shared servers. On Acquia Hosting, it is also superceded by Varnish. For more details see our documentation: https://docs.acquia.com/articles/boost-acquia-cloud',
       'solved_message' => 'Boost module is disabled',
