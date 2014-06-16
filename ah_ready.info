@@ -1,6 +1,12 @@
 name = Acquia Hosting Ready
 description = "Custom Insight Readiness Checks for Acquia Hosting"
-php = 5.0
+php = 5.2
 core = 7.x
 package = Acquia Network Connector
+configure = admin/config/system/ah-ready
 dependencies[] = acquia_spi
+dependencies[] = acquiasdk
+dependencies[] = encrypt
+files[] = ah_ready.module
+files[] = ah_ready.install
+files[] = ah_ready.pages.inc

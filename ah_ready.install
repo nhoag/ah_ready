@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the acquia_migrate module.
+ */
+
+/**
+ * Implementation of hook_requirements()
+ */
+function ah_ready_requirements($phase) {
+
+  $t = get_t();
+
+  $requirements = array(
+    'ah_ready_cloudapi_connect' => array(
+      'title' => $t('Acquia Hosting CloudAPI'),
+      'description' => $t('Enable important Insight checks by adding CloudAPI credentials to the Acquia Hosting Ready module configuration.'),
+    ),
+    'ah_ready_domains_added' => array(
+      'title' => $t('Acquia Hosting Domains'),
+      'description' => $t('Enable important Insight checks by adding production domains to the Acquia Hosting Ready module configuration.'),
+    ),
+  );
+
+  switch ($phase) {
+    case 'runtime':
+    case 'install':
+      $cloudapi_username = variable_get('ah_ready_cloudapi_username', '');
+      $cloudapi_password = variable_get('ah_ready_cloudapi_password', '');
+      if (!empty($cloudapi_username) && !empty($cloudapi_password)) {
+        $requirements['ah_ready_cloudapi_connect']['value'] = $t('Added');
+        $requirements['ah_ready_cloudapi_connect']['severity'] = REQUIREMENT_OK;
+      } else {
+        $requirements['ah_ready_cloudapi_connect']['value'] = $t('Not added');
+        $requirements['ah_ready_cloudapi_connect']['severity'] = REQUIREMENT_WARNING;
+      }
+
+      $ah_ready_domains = variable_get('ah_ready_domains', '');
+      if (!empty($ah_ready_domains)) {
+        $requirements['ah_ready_domains_added']['value'] = $t('Added');
+        $requirements['ah_ready_domains_added']['severity'] = REQUIREMENT_OK;
+      } else {
+        $requirements['ah_ready_domains_added']['value'] = $t('Not added');
+        $requirements['ah_ready_domains_added']['severity'] = REQUIREMENT_WARNING;
+      }
+
+      break;
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ah_ready_uninstall() {
+  variable_del('ah_ready_cloudapi_username');
+  variable_del('ah_ready_cloudapi_password');
+  variable_del('ah_ready_domains');
+  variable_del('ah_ready_site');
+}
