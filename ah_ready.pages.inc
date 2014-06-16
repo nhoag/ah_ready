@@ -42,7 +42,6 @@ function ah_ready_settings_form($form, &$form_state) {
   $form['ah_ready_cloudapi_password'] = array(
     '#type' => 'password',
     '#title' => t('CloudAPI Password'),
-    '#default_value' => decrypt(variable_get('ah_ready_cloudapi_password', '')),
     '#required' => TRUE,
   );
   $form['actions'] = array('#type' => 'actions');
