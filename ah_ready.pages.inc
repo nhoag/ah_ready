@@ -69,7 +69,7 @@ function ah_ready_settings_form_submit($form, &$form_state) {
 /**
  * Select form builder function.
  */
-function ah_ready_site_form($form, &$form_state, $ah_ready_user, $ah_ready_password) {
+function ah_ready_site_form($form, &$form_state) {
   $form = array();
   $form['#prefix'] = t('Select an Acquia subscription in the dropdown.');
   $form['ah_ready_sites'] = array(
@@ -86,7 +86,6 @@ function ah_ready_site_form($form, &$form_state, $ah_ready_user, $ah_ready_passw
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
-
   return $form;
 }
 
@@ -98,35 +97,110 @@ function ah_ready_site_form_submit($form, &$form_state) {
   $form_state['redirect'] = array('admin/config/system/ah-ready/site');
 }
 
-/**
- * Select form builder function.
- */
-function ah_ready_domain_form($form, &$form_state, $ah_ready_user, $ah_ready_password) {
+function theme_ah_ready_domains($vars) {
+  $rows = array();
+  $output = '';
+  $form = $vars['form'];
+  $header = array('Production Domains', 'Enable SSL Check', 'Delete Entry');
+  foreach (element_children($form) as $d) {
+    $rows[] = array(
+      drupal_render($form[$d]['domain']),
+      drupal_render($form[$d]['ah_ssl']),
+      drupal_render($form[$d]['delete']),
+    );
+  }
+  $output = theme('table', array('header' => $header, 'rows' => $rows));
+  $output .= drupal_render_children($form);
+
+  return $output;
+}
+
+function ah_ready_domain_form($form, &$form_state, $no_js_use = FALSE) {
   $form = array();
-
-  $cloudapi = ah_ready_cloudapi_connect();
-  $site = variable_get('ah_ready_cloudapi_site', '');
-
-  $domains = array();
-  if (!empty($cloudapi) && !empty($site)) {
-    foreach($cloudapi->domains($site, CLOUD_ENV) as $domain) {
-      $domains[$domain['name']] = $domain['name'];
+  $form['ah_ready_domains'] = array(
+    '#tree' => false,
+    '#prefix' => '<div id="ah-ready-domains-form">',
+    '#suffix' => '</div>',
+  );
+  $form['ah_ready_domains']['domains'] = array(
+    '#prefix' => '<div id="ah-ready-domains-wrapper">',
+    '#suffix' => '</div>',
+    '#theme' => 'ah_ready_domains',
+  );
+  $defaults = array();
+  $result = db_query("SELECT * FROM {ah_ready_domains}");
+  if ($result) {
+    while ($row = $result->fetchAssoc()) {
+      $defaults[] = $row;
     }
   }
+  if (isset($form_state['num_domains'])) {
+    $domain_count = $form_state['num_domains'];
+  } elseif (isset($defaults)) {
+    $domain_count = count($defaults);
+  } else {
+    $domain_count = 1;
+  }
+  $new = 0;
+  for ($i = 0; $i < $domain_count; $i++) {
+    if (isset($defaults[$i])) {
+      $did = 'did:' . $defaults[$i]['did'];
+      $domain = $defaults[$i]['domain'];
+      $ssl = $defaults[$i]['ah_ssl'];
+    }
+    if (!isset($defaults[$i]) && isset($form_state['num_domains'])) {
+      $did = 'new:' . $new;
+      $domain = $form_state['values']['domains'][$did]['domain'];
+      $ssl = $form_state['values']['domains'][$did]['ah_ssl'];
+      $new++;
+    }
+    $form['ah_ready_domains']['domains'][$did] = array(
+      '#tree' => true,
+      '#weight' => $i,
+      '#parents' => array('domains', $did),
+    );
+    $form['ah_ready_domains']['domains'][$did]['did'] = array(
+      '#type' => 'value',
+      '#value' => $i,
+      '#parents' => array('domains', $did, 'did'),
+    );
+    $form['ah_ready_domains']['domains'][$did]['domain'] = array(
+      '#type' => 'textfield',
+      '#weight' => $i,
+      '#default_value' => $domain,
+      '#title' => 'Production Domains',
+      '#title_display' => 'invisible',
+      '#parents' => array('domains', $did, 'domain'),
+      '#autocomplete_path' => 'admin/ah_ready/domains/autocomplete',
+    );
+    $form['ah_ready_domains']['domains'][$did]['ah_ssl'] = array(
+      '#type' => 'checkbox',
+      '#weight' => $i,
+      '#default_value' => $ssl,
+      '#title_display' => 'invisible',
+      '#title' => 'Enable SSL Check',
+      '#parents' => array('domains', $did, 'ah_ssl'),
+    );
+    $form['ah_ready_domains']['domains'][$did]['delete'] = array(
+      '#type' => 'checkbox',
+      '#weight' => $i,
+      '#title_display' => 'invisible',
+      '#title' => 'Delete Entry',
+      '#parents' => array('domains', $did, 'delete'),
+    );
+  }
 
-  $form['#prefix'] = t('Enter production URLs to unlock additional Insight tests.');
-
-  $form['ah_ready_domains'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Enter domains to be checked'),
-    '#description' => t(
-      'If you do not see your production domains in the autocomplete list, add them to the <a href="https://docs.acquia.com/cloud/configure/domains">Acquia Network Dashboard</a>.'
+  $form['ah_ready_domains']['add_domain'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add domain'),
+    '#submit' => array('ajax_add_domain'),
+    '#ajax' => array(
+      'callback' => 'ajax_add_domain_callback',
+      'wrapper' => 'ah-ready-domains-wrapper',
+      'effect' => 'fade',
     ),
-    '#autocomplete_path' => 'admin/ah_ready/domains/autocomplete',
-    '#default_value' => variable_get('ah_ready_domains', ''),
   );
-  $form['actions'] = array('#type' => 'actions');
-  $form['actions']['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
@@ -135,10 +209,34 @@ function ah_ready_domain_form($form, &$form_state, $ah_ready_user, $ah_ready_pas
 }
 
 function ah_ready_domain_form_submit($form, &$form_state) {
-  $ah_ready_domains = $form_state['values']['ah_ready_domains'];
-  variable_set('ah_ready_domains', $ah_ready_domains);
+  foreach ($form_state['values']['domains'] as $domain) {
+    if ($domain['delete'] == 1) {
+      db_delete('ah_ready_domains')
+        ->condition('domain', $domain['domain'])
+        ->execute();
+    } elseif ($domain['domain']) {
+      db_merge('ah_ready_domains')
+        ->key(array('domain' => $domain['domain']))
+        ->fields(array(
+          'ah_ssl' => $domain['ah_ssl'],
+        ))
+        ->execute();
+    }
+  }
+  drupal_set_message(t("Domains successfully set."), 'status');
+  $form_state['redirect'] = array('admin/config/system/ah-ready/domains');
+}
 
-  drupal_set_message(t('Test domain successfully set.'), 'status');
-  $form_state['redirect'] = array('admin/config/system/ah-ready');
+function ajax_add_domain_callback($form, $form_state) {
+  return $form['ah_ready_domains']['domains'];
+}
+
+function ajax_add_domain($form, &$form_state) {
+  if ($form_state['values']['add_domain']) {
+    $n = $_GET['q'] == 'system/ajax' ? 1 : 5;
+    $form_state['num_domains'] = count($form_state['values']['domains']) + $n;
+  }
+  unset($form_state['input']['domains']);
+  $form_state['rebuild'] = TRUE;
 }
 

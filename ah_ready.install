@@ -6,6 +6,43 @@
  */
 
 /**
+ * Implementation of hook_schema()
+ */
+function ah_ready_schema() {
+  $schema['ah_ready_domains'] = array(
+    'description' => 'Stores domains to check in Acquia Insight.',
+    'fields' => array(
+      'did' => array(
+        'description' => 'Primary Key: Unique domain entry ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'domain' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Unique domain.',
+      ),
+      'ah_ssl' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'not null' => TRUE,
+        'description' => 'Check SSL cert for domain.',
+      ),
+    ),
+    'unique keys' => array(
+      'domain' => array('domain'),
+    ),
+    'primary key' => array('did'),
+  );
+
+  return $schema;
+}
+
+/**
  * Implementation of hook_requirements()
  */
 function ah_ready_requirements($phase) {
@@ -55,8 +92,8 @@ function ah_ready_requirements($phase) {
  * Implementation of hook_uninstall().
  */
 function ah_ready_uninstall() {
+  db_drop_table('ah_ready_domains');
   variable_del('ah_ready_cloudapi_username');
   variable_del('ah_ready_cloudapi_password');
-  variable_del('ah_ready_domains');
-  variable_del('ah_ready_site');
+  variable_del('ah_ready_cloudapi_site');
 }
