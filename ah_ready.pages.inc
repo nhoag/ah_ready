@@ -116,115 +116,167 @@ function theme_ah_ready_domains($vars) {
 }
 
 function ah_ready_domain_form($form, &$form_state, $no_js_use = FALSE) {
-  $form = array();
-  $form['ah_ready_domains'] = array(
-    '#tree' => false,
-    '#prefix' => '<div id="ah-ready-domains-form">',
-    '#suffix' => '</div>',
-  );
-  $form['ah_ready_domains']['domains'] = array(
-    '#prefix' => '<div id="ah-ready-domains-wrapper">',
-    '#suffix' => '</div>',
-    '#theme' => 'ah_ready_domains',
-  );
-  $defaults = array();
-  $result = db_query("SELECT * FROM {ah_ready_domains}");
-  if ($result) {
-    while ($row = $result->fetchAssoc()) {
-      $defaults[] = $row;
+  if (isset($form_state['ah_ready_domains']['confirm'])) {
+    $output = "\n<ul>";
+    foreach ($form_state['ah_ready_domains']['original_form']['domains'] as $domains) {
+      if ($domains['delete'] == 1) {
+        $output .= '<li>' . $domains['domain'] . '</li>';
+      }
     }
-  }
-  if (isset($form_state['num_domains'])) {
-    $domain_count = $form_state['num_domains'];
-  } elseif (isset($defaults)) {
-    $domain_count = count($defaults);
+    $output .= '</ul>';
+    return confirm_form($form, t("The following domains will be deleted:") . $output , 'admin/config/system/ah-ready/domains');
   } else {
-    $domain_count = 1;
+    $form = array();
+    $form['ah_ready_domains'] = array(
+      '#tree' => false,
+      '#prefix' => '<div id="ah-ready-domains-form">',
+      '#suffix' => '</div>',
+    );
+    $form['ah_ready_domains']['domains'] = array(
+      '#prefix' => '<div id="ah-ready-domains-wrapper">',
+      '#suffix' => '</div>',
+      '#theme' => 'ah_ready_domains',
+    );
+    $defaults = array();
+    $result = db_query("SELECT * FROM {ah_ready_domains}");
+    if ($result) {
+      while ($row = $result->fetchAssoc()) {
+        $defaults[] = $row;
+      }
+    }
+    if (isset($form_state['num_domains'])) {
+      $domain_count = $form_state['num_domains'];
+    } elseif (isset($defaults)) {
+      $domain_count = count($defaults);
+    } else {
+      $domain_count = 1;
+    }
+    $new = 0;
+    for ($i = 0; $i < $domain_count; $i++) {
+      if (isset($defaults[$i])) {
+        $did = 'did:' . $defaults[$i]['did'];
+        $domain = $defaults[$i]['domain'];
+        $ssl = $defaults[$i]['ah_ssl'];
+      }
+      if (!isset($defaults[$i]) && isset($form_state['num_domains'])) {
+        $did = 'new:' . $new;
+        $domain = $form_state['values']['domains'][$did]['domain'];
+        $ssl = $form_state['values']['domains'][$did]['ah_ssl'];
+        $new++;
+      }
+      $form['ah_ready_domains']['domains'][$did] = array(
+        '#tree' => true,
+        '#weight' => $i,
+        '#parents' => array('domains', $did),
+      );
+      $form['ah_ready_domains']['domains'][$did]['did'] = array(
+        '#type' => 'value',
+        '#value' => $i,
+        '#parents' => array('domains', $did, 'did'),
+      );
+      $form['ah_ready_domains']['domains'][$did]['domain'] = array(
+        '#type' => 'textfield',
+        '#weight' => $i,
+        '#default_value' => $domain,
+        '#title' => 'Production Domains',
+        '#title_display' => 'invisible',
+        '#parents' => array('domains', $did, 'domain'),
+        '#autocomplete_path' => 'admin/ah_ready/domains/autocomplete',
+      );
+      $form['ah_ready_domains']['domains'][$did]['ah_ssl'] = array(
+        '#type' => 'checkbox',
+        '#weight' => $i,
+        '#default_value' => $ssl,
+        '#title_display' => 'invisible',
+        '#title' => 'Enable SSL Check',
+        '#parents' => array('domains', $did, 'ah_ssl'),
+      );
+      $form['ah_ready_domains']['domains'][$did]['delete'] = array(
+        '#type' => 'checkbox',
+        '#weight' => $i,
+        '#title_display' => 'invisible',
+        '#title' => 'Delete Entry',
+        '#parents' => array('domains', $did, 'delete'),
+      );
+    }
+
+    $form['ah_ready_domains']['add_domain'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add domain'),
+      '#submit' => array('ajax_add_domain'),
+      '#ajax' => array(
+        'callback' => 'ajax_add_domain_callback',
+        'wrapper' => 'ah-ready-domains-wrapper',
+        'effect' => 'fade',
+      ),
+    );
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+    );
+
+    return $form;
   }
-  $new = 0;
-  for ($i = 0; $i < $domain_count; $i++) {
-    if (isset($defaults[$i])) {
-      $did = 'did:' . $defaults[$i]['did'];
-      $domain = $defaults[$i]['domain'];
-      $ssl = $defaults[$i]['ah_ssl'];
-    }
-    if (!isset($defaults[$i]) && isset($form_state['num_domains'])) {
-      $did = 'new:' . $new;
-      $domain = $form_state['values']['domains'][$did]['domain'];
-      $ssl = $form_state['values']['domains'][$did]['ah_ssl'];
-      $new++;
-    }
-    $form['ah_ready_domains']['domains'][$did] = array(
-      '#tree' => true,
-      '#weight' => $i,
-      '#parents' => array('domains', $did),
-    );
-    $form['ah_ready_domains']['domains'][$did]['did'] = array(
-      '#type' => 'value',
-      '#value' => $i,
-      '#parents' => array('domains', $did, 'did'),
-    );
-    $form['ah_ready_domains']['domains'][$did]['domain'] = array(
-      '#type' => 'textfield',
-      '#weight' => $i,
-      '#default_value' => $domain,
-      '#title' => 'Production Domains',
-      '#title_display' => 'invisible',
-      '#parents' => array('domains', $did, 'domain'),
-      '#autocomplete_path' => 'admin/ah_ready/domains/autocomplete',
-    );
-    $form['ah_ready_domains']['domains'][$did]['ah_ssl'] = array(
-      '#type' => 'checkbox',
-      '#weight' => $i,
-      '#default_value' => $ssl,
-      '#title_display' => 'invisible',
-      '#title' => 'Enable SSL Check',
-      '#parents' => array('domains', $did, 'ah_ssl'),
-    );
-    $form['ah_ready_domains']['domains'][$did]['delete'] = array(
-      '#type' => 'checkbox',
-      '#weight' => $i,
-      '#title_display' => 'invisible',
-      '#title' => 'Delete Entry',
-      '#parents' => array('domains', $did, 'delete'),
-    );
+}
+
+function domain_add_schema($domain) {
+  if (!preg_match("#^https?://#", $domain)) {
+    $domain = "http://" . $domain;
   }
 
-  $form['ah_ready_domains']['add_domain'] = array(
-    '#type' => 'submit',
-    '#value' => t('Add domain'),
-    '#submit' => array('ajax_add_domain'),
-    '#ajax' => array(
-      'callback' => 'ajax_add_domain_callback',
-      'wrapper' => 'ah-ready-domains-wrapper',
-      'effect' => 'fade',
-    ),
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Submit'),
-  );
+  return $domain;
+}
 
-  return $form;
+function ah_ready_domain_form_validate($form, &$form_state) {
+  $domains = isset($form_state['values']['domains']) ? $form_state['values']['domains'] : $form_state['ah_ready_domains']['original_form']['domains'];
+  foreach ($domains as $did => $v) {
+    $url = $v['domain'];
+    if (!empty($v['domain'])) {
+      $url = domain_add_schema($url);
+      if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        form_set_error('domains][' . $did, t("Invalid domain."));
+      }
+    }
+  }
 }
 
 function ah_ready_domain_form_submit($form, &$form_state) {
-  foreach ($form_state['values']['domains'] as $domain) {
-    if ($domain['delete'] == 1) {
+  $domains = isset($form_state['values']['domains']) ? $form_state['values']['domains'] : $form_state['ah_ready_domains']['original_form']['domains'];
+  $delete = array();
+  $urls = array();
+  foreach ($domains as $domain) {
+    $url = parse_url(domain_add_schema($domain['domain']), PHP_URL_HOST);
+    if (!empty($url) && $domain['delete'] == 0) {
+      $urls[] = $domain;
+    } else {
+      $delete[] = $domain;
+    }
+  }
+  if (!isset($form_state['ah_ready_domains']['confirm']) && !empty($delete)) {
+    $form_state['ah_ready_domains']['confirm'] = true;
+    $form_state['ah_ready_domains']['original_form'] = $form_state['values'];
+    $form_state['rebuild'] = true;
+  } else {
+    foreach ($delete as $url) {
       db_delete('ah_ready_domains')
-        ->condition('domain', $domain['domain'])
+        ->condition('domain', $url['domain'])
         ->execute();
-    } elseif ($domain['domain']) {
+    }
+    foreach ($urls as $url) {
       db_merge('ah_ready_domains')
-        ->key(array('domain' => $domain['domain']))
+        ->key(array('domain' => $url['domain']))
         ->fields(array(
-          'ah_ssl' => $domain['ah_ssl'],
+          'ah_ssl' => $url['ah_ssl'],
         ))
         ->execute();
     }
+    drupal_set_message(t("Domains successfully set."), 'status');
+    $form_state['redirect'] = array('admin/config/system/ah-ready/domains');
   }
-  drupal_set_message(t("Domains successfully set."), 'status');
-  $form_state['redirect'] = array('admin/config/system/ah-ready/domains');
+}
+
+function ah_ready_domain_delete($form, &$form_state, $delete) {
+  return confirm_form($form, t('Are you sure you want to delete the specified domains?'), 'admin/config/system/ah-ready/domains', '', t('Delete'), t('Cancel'));
 }
 
 function ajax_add_domain_callback($form, $form_state) {
