@@ -670,6 +670,15 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'security',
       'severity'       => 32,
     ),
+    'statistics_enabled_check' => array(
+      'description'    => 'The core Statictics module is triggered on every page load and can cause site slowness.',
+      'solved_message' => 'Statistics is disabled',
+      'failed_message' => 'Statistics is enabled',
+      'solved'         => ah_ready_module_check('statistics'),
+      'fix_details'    => 'Disable the Statistics module and consider using a client-side solution.',
+      'category'       => 'performance',
+      'severity'       => 32,
+    ),
   );
 }
 
