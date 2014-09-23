@@ -102,7 +102,7 @@ function _ah_ready_domains_autocomplete($domains_typed = '') {
 
 function ah_ready_cloudapi_connect() {
   $ah_ready_user = variable_get('ah_ready_cloudapi_username', '');
-  $ah_ready_password = decrypt(variable_get('ah_ready_cloudapi_password', ''));
+  $ah_ready_password = aes_decrypt(variable_get('ah_ready_cloudapi_password', ''));
 
   if (!empty($ah_ready_user) && !empty($ah_ready_password)) {
     $cloudapi = CloudApiClient::factory(array(

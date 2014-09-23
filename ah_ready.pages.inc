@@ -10,7 +10,7 @@
  */
 function ah_ready_settings_page($arg = NULL) {
   $ah_ready_user = variable_get('ah_ready_cloudapi_username', '');
-  $ah_ready_password = decrypt(variable_get('ah_ready_cloudapi_password', ''));
+  $ah_ready_password = aes_decrypt(variable_get('ah_ready_cloudapi_password', ''));
   if ($arg == 'domains') {
     return drupal_get_form('ah_ready_domain_form', $ah_ready_user, $ah_ready_password);
   } elseif ($arg == 'site') {
@@ -56,7 +56,7 @@ function ah_ready_settings_form($form, &$form_state) {
 function ah_ready_settings_form_submit($form, &$form_state) {
   $ah_ready_user = $form_state['values']['ah_ready_cloudapi_username'];
   $ah_ready_password = $form_state['values']['ah_ready_cloudapi_password'];
-  $ah_ready_password = encrypt("$ah_ready_password");
+  $ah_ready_password = aes_encrypt("$ah_ready_password");
 
   variable_set('ah_ready_cloudapi_username', $ah_ready_user);
   variable_set('ah_ready_cloudapi_password', $ah_ready_password);
