@@ -463,6 +463,15 @@ function ah_ready_acquia_spi_test() {
       'category'       => 'best_practices',
       'severity'       => 32,
     ),
+    'honeypot_enabled_check' => array(
+      'description'    => 'Honeypot can make pages uncacheable by Drupal or Varnish caches.',
+      'solved_message' => 'Honeypot is disabled',
+      'failed_message' => 'Honeypot is enabled',
+      'solved'         => ah_ready_module_check('honeypot'),
+      'fix_details'    => 'Disable the Honeypot module.',
+      'category'       => 'performance',
+      'severity'       => 32,
+    ),
     'imagefield_crop_enabled_check' => array(
       'description'    => 'Imagefield Crop adds lots of data to the Variables table, and can cause problems with memory consumption.',
       'solved_message' => 'Imagefield Crop is disabled',
